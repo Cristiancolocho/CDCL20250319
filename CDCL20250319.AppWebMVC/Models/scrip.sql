@@ -41,3 +41,5 @@ CREATE TABLE Users (
     Role VARCHAR(50) NOT NULL                -- Rol del usuario (Rol del usuario)
 );
 GO
+
+

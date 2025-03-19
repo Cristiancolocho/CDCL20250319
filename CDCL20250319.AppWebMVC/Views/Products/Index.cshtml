@@ -7,15 +7,6 @@
 <h1>Productos</h1>
 <form asp-action="Index">
     <div class="row">
-           
-        <div class="col-4">
-            <div class="form-group">
-                <label class="control-label">Categorias</label>
-                <select name="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
-            </div>
-        </div>
-    </div>
-
      <div class="col-4">
             <div class="form-group">
                 <label class="control-label">Cant. Registros</label>
@@ -36,12 +27,13 @@
             <a class="btn btn-info" asp-action="Create">Ir a crear</a>
         </div>
     </div>
+    </div>
 </form>
 
 <p>
     <a asp-action="Create">Crear Producto</a>
 </p>
-<table class="table">
+<table class="table" id="myTable">
     <thead>
         <tr>
             <th>
@@ -89,3 +81,22 @@
 }
     </tbody>
 </table>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+             // $('#myTable').DataTable();
+
+            // $('#myTable').DataTable({
+            //      "language": {
+            //     "url": "//cdn.datatables.net/plug-ins/1.10.16/i18n/Spanish.json"
+            //     }
+            // });
+
+             $('#myTable').DataTable({
+               "language":languageTable
+             });
+        });
+    </script>
+}

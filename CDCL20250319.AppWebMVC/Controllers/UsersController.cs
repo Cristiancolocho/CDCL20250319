@@ -6,9 +6,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CDCL20250319.AppWebMVC.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CDCL20250319.AppWebMVC.Controllers
 {
+    [Authorize(Roles  = "ADMINISTRADOR")]
     public class UsersController : Controller
     {
         private readonly Test20250319DbContext _context;
@@ -132,6 +139,44 @@ namespace CDCL20250319.AppWebMVC.Controllers
 
             return View(user);
         }
+        [AllowAnonymous]
+        public async Task<IActionResult> CerrarSession()
+        {
+            // Hola mundo
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
+        }
+        [AllowAnonymous]
+        public IActionResult Login()
+        {
+            return View();
+        }
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> Login(User user)
+        {
+          
+            var userAuth = await _context.
+                Users.
+                FirstOrDefaultAsync(s => s.Email == user.Email && s.PasswordHash == user.PasswordHash);
+            if (userAuth != null && userAuth.UserId > 0 && userAuth.Email == user.Email)
+            {
+                var claims = new[] {
+                    new Claim(ClaimTypes.Name, userAuth.Email),
+                    new Claim("UserId", userAuth.UserId.ToString()),
+                     new Claim("Username", userAuth.Username),
+                    new Claim(ClaimTypes.Role, userAuth.Role)
+                    };
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                ModelState.AddModelError("", "El email o contraseña estan incorrectos");
+                return View();
+            }
+        }
 
         // POST: Users/Delete/5
         [HttpPost, ActionName("Delete")]
@@ -152,5 +197,6 @@ namespace CDCL20250319.AppWebMVC.Controllers
         {
             return _context.Users.Any(e => e.UserId == id);
         }
+
     }
 }

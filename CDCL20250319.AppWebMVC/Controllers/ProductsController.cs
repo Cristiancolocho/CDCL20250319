@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CDCL20250319.AppWebMVC.Models;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace CDCL20250319.AppWebMVC.Controllers
 {
@@ -19,10 +21,24 @@ namespace CDCL20250319.AppWebMVC.Controllers
         }
 
         // GET: Products
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(Product product)
         {
+            var query = _context.Products.AsQueryable();
+            if (product.BrandId > 0)
+                query = query.Where(s => s.BrandId == product.BrandId);
+            if (product.CategoryId > 0)
+                query = query.Where(s => s.CategoryId == product.CategoryId);
+          
+
             var test20250319DbContext = _context.Products.Include(p => p.Brand).Include(p => p.Category);
-            return View(await test20250319DbContext.ToListAsync());
+
+            var brands = _context.Brands.ToList();
+            brands.Add(new Brand { BrandName = "SELECCIONAR", BrandId = 0 });
+            var categories = _context.Categories.ToList();
+            categories.Add(new Category { CategoryName = "SELECCIONAR", CategoryId = 0 });
+            ViewData["CategoryId"] = new SelectList(categories, "CategoryId", "CategoryName", 0);
+            ViewData["BrandId"] = new SelectList(brands, "BrandId", "BrandName", 0);
+            return View(await query.ToListAsync());
         }
 
         // GET: Products/Details/5
